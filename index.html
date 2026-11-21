@@ -7,23 +7,20 @@
 main{width:100%;max-width:520px;background:white;border-radius:22px;padding:25px 20px;box-shadow:0 10px 35px #192d4b17}
 h1,p{text-align:center}h1{margin:0}.sub,.date,.hint{color:#667085}.date{font-size:14px;margin:18px 0}
 .panel{background:#f0f5ff;border:1px solid #d9e5ff;border-radius:15px;padding:15px;text-align:center;margin:18px 0}
-.panel p{font-size:13px;color:#52627a;line-height:1.45}.enable,.test{width:100%;padding:12px;border-radius:11px;font-weight:700;font-size:15px}
-.enable{border:0;background:#245fca;color:white}.enable.enabled{background:#16834f}
-.test{margin-top:9px;border:1px solid #cbd5e1;background:white;color:#344054;font-size:14px}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.panel p{font-size:13px;color:#52627a;line-height:1.45}.enable{width:100%;padding:12px;border:0;border-radius:11px;background:#245fca;color:white;font-weight:700;font-size:15px}
+.enable.enabled{background:#16834f}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .slot{min-height:76px;border:2px solid #d8e0eb;border-radius:15px;background:#edf2f8;color:#243247;font-size:20px;font-weight:700}
 .slot small{display:block;font-size:12px;font-weight:500;margin-top:4px}.slot.taken{background:#20a464;color:white;border-color:#16834f}
 .reset{display:block;margin:18px auto 0;padding:10px 16px;border:1px solid #cbd5e1;border-radius:10px;background:white;color:#475467}
 button:focus-visible{outline:3px solid #477fe8;outline-offset:3px}
 </style></head><body><main>
-<h1>💊 Medicine Reminder</h1><p class="sub">Tap a time after taking your medicine</p>
+<h1>💊 Ganesh Ram Eye Drop Reminder</h1><p class="sub">Tap a time after taking your Eye Drop</p>
 <div class="date" id="today"></div>
 <section class="panel"><strong>🔔 Daily notifications</strong>
 <p id="reminderInfo">Enable notifications to receive reminders at your scheduled times.</p>
-<button class="enable" id="enable">Enable reminders</button>
-<button class="test" id="testReminder" type="button">🔔 Test reminder now</button></section>
+<button class="enable" id="enable">Enable reminders</button></section>
 <section class="grid" aria-label="Medicine time slots">
-<button class="slot" data-time="7 AM">7:00 AM<small>Not taken</small></button>
+<button class="slot" data-time="7 AM Hylosurge">7:00 AM<small>Not taken</small></button>
 <button class="slot" data-time="8 AM">8:00 AM<small>Not taken</small></button>
 <button class="slot" data-time="9 AM">9:00 AM<small>Not taken</small></button>
 <button class="slot" data-time="12 PM">12:00 PM<small>Not taken</small></button>
@@ -55,18 +52,13 @@ function updateButton(){if(!('Notification'in window)){info.textContent='Notific
 if(localStorage.getItem(enabledKey)==='yes'&&Notification.permission==='granted'){enable.textContent='Reminders enabled ✓';enable.classList.add('enabled');info.textContent='Notifications are enabled. Keep this page open for reminders.';}
 else{enable.textContent='Enable reminders';enable.classList.remove('enabled');info.textContent=Notification.permission==='denied'?'Notifications are blocked. Allow them in Chrome site settings.':'Tap below and allow notifications when asked.';}}
 function alertSound(){try{let C=window.AudioContext||window.webkitAudioContext;if(C){let c=new C();[0,.25,.5].forEach(delay=>{let o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.setValueAtTime(.001,c.currentTime+delay);g.gain.exponentialRampToValueAtTime(.15,c.currentTime+delay+.02);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+delay+.2);o.start(c.currentTime+delay);o.stop(c.currentTime+delay+.22);});}}catch(e){}if(navigator.vibrate)navigator.vibrate([250,120,250]);}
-document.getElementById('testReminder').addEventListener('click',()=>{
- if(!('Notification'in window)){info.textContent='Notifications are not supported by this browser.';return;}
- if(Notification.permission!=='granted'){info.textContent='Please enable notifications first, then tap Test reminder again.';return;}
- try{const n=new Notification('💊 Test medicine reminder',{body:'This is a test. Notifications are working while this page is active.',tag:'medicine-reminder-test'});n.onclick=()=>{window.focus();n.close();};alertSound();status.textContent='Test notification sent. Check your phone notification area.';}
- catch(e){info.textContent='Could not show notification. Check Chrome notification settings.';}
-});
-function sent(){try{let s=JSON.parse(localStorage.getItem(sentKey)||'{}');return s.day===day()?s.times:[]}catch{return [];}}
+function sent(){try{let s=JSON.parse(localStorage.getItem(sentKey)||'{}');return s.day===day()?s.times:[];}catch{return [];}}
 function check(){if(localStorage.getItem(enabledKey)!=='yes'||!('Notification'in window)||Notification.permission!=='granted')return;
 let d=new Date(),mins=d.getHours()*60+d.getMinutes(),done=sent();
-schedule.forEach(([label,h])=>{if(mins===h*60&&!done.includes(label)){done.push(label);localStorage.setItem(sentKey,JSON.stringify({day:day(),times:done}));try{let n=new Notification('💊 Medicine reminder',{body:`It is ${label}. Time to take your scheduled medicine.`,tag:`med-${day()}-${label}`,requireInteraction:true});n.onclick=()=>{window.focus();n.close();};}catch(e){}alertSound();status.textContent=`Reminder: ${label}. Please check your medicine schedule.`;}});
-}
-enable.addEventListener('click',async()=>{if(!('Notification'in window))return;try{let p=await Notification.requestPermission();if(p==='granted'){localStorage.setItem(enabledKey,'yes');updateButton();status.textContent='Daily reminders enabled.';new Notification('Medicine reminders enabled',{body:'Reminders are enabled while this page is active.'});}else{localStorage.setItem(enabledKey,'no');updateButton();}}catch(e){info.textContent='Open this page in Chrome and allow notifications.';}});
+schedule.forEach(([label,h])=>{if(mins===h*60&&!done.includes(label)){done.push(label);localStorage.setItem(sentKey,JSON.stringify({day:day(),times:done}));
+try{let n=new Notification('💊 Medicine reminder',{body:`It is ${label}. Time to take your scheduled medicine.`,tag:`med-${day()}-${label}`,requireInteraction:true});n.onclick=()=>{window.focus();n.close();};}catch(e){}
+alertSound();status.textContent=`Reminder: ${label}. Please check your medicine schedule.`;}});}
+enable.addEventListener('click',async()=>{if(!('Notification'in window))return;try{let p=await Notification.requestPermission();if(p==='granted'){localStorage.setItem(enabledKey,'yes');updateButton();status.textContent='Daily reminders enabled.';new Notification('Medicine reminders enabled',{body:'You will receive reminders at the scheduled times while this page is active.'});}else{localStorage.setItem(enabledKey,'no');updateButton();}}catch(e){info.textContent='Open this page in Chrome and allow notifications.';}});
 updateButton();check();
 setInterval(()=>{let s=JSON.parse(localStorage.getItem(key)||'{}');if(s.day!==day()){taken=[];save();paint();dateText.textContent=new Date().toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'});status.textContent='A new day has started. All times are reset.';}check();},15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)check();});window.addEventListener('focus',check);
