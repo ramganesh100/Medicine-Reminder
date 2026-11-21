@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f4f7fb"><title>Medicine Reminder</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:24px 16px;background:#f4f7fb;color:#172033;font-family:system-ui,sans-serif;display:flex;justify-content:center}
+main{width:100%;max-width:520px;background:white;border-radius:22px;padding:25px 20px;box-shadow:0 10px 35px #192d4b17}
+h1,p{text-align:center}h1{margin:0}.sub,.date,.hint{color:#667085}.date{font-size:14px;margin:18px 0}
+.panel{background:#f0f5ff;border:1px solid #d9e5ff;border-radius:15px;padding:15px;text-align:center;margin:18px 0}
+.panel p{font-size:13px;color:#52627a;line-height:1.45}.enable{width:100%;padding:12px;border:0;border-radius:11px;background:#245fca;color:white;font-weight:700;font-size:15px}
+.enable.enabled{background:#16834f}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.slot{min-height:76px;border:2px solid #d8e0eb;border-radius:15px;background:#edf2f8;color:#243247;font-size:20px;font-weight:700}
+.slot small{display:block;font-size:12px;font-weight:500;margin-top:4px}.slot.taken{background:#20a464;color:white;border-color:#16834f}
+.reset{display:block;margin:18px auto 0;padding:10px 16px;border:1px solid #cbd5e1;border-radius:10px;background:white;color:#475467}
+button:focus-visible{outline:3px solid #477fe8;outline-offset:3px}
+</style></head><body><main>
+<h1>💊 Ganesh Ram Eye Drop Reminder</h1><p class="sub">Tap a time after taking your Eye Drop</p>
+<div class="date" id="today"></div>
+<section class="panel"><strong>🔔 Daily notifications</strong>
+<p id="reminderInfo">Enable notifications to receive reminders at your scheduled times.</p>
+<button class="enable" id="enable">Enable reminders</button></section>
+<section class="grid" aria-label="Medicine time slots">
+<button class="slot" data-time="7 AM Hylosurge">7:00 AM<small>Not taken</small></button>
+<button class="slot" data-time="8 AM">8:00 AM<small>Not taken</small></button>
+<button class="slot" data-time="9 AM">9:00 AM<small>Not taken</small></button>
+<button class="slot" data-time="12 PM">12:00 PM<small>Not taken</small></button>
+<button class="slot" data-time="3 PM">3:00 PM<small>Not taken</small></button>
+<button class="slot" data-time="5 PM">5:00 PM<small>Not taken</small></button>
+<button class="slot" data-time="6 PM">6:00 PM<small>Not taken</small></button>
+<button class="slot" data-time="8 PM">8:00 PM<small>Not taken</small></button>
+<button class="slot" data-time="9 PM">9:00 PM<small>Not taken</small></button>
+<button class="slot" id="last">10:00 PM<small>Not taken</small></button>
+</section>
+<p class="hint" id="status">Grey = pending • Green = taken</p>
+<button class="reset" id="reset">Reset all (if needed)</button>
+</main>
+<script>
+(() => {
+const buttons=[...document.querySelectorAll('.slot')], key='medTracker', enabledKey='medNotifyEnabled', sentKey='medNotifySent';
+const schedule=[['7 AM',7],['8 AM',8],['9 AM',9],['12 PM',12],['3 PM',15],['5 PM',17],['6 PM',18],['8 PM',20],['9 PM',21],['10 PM',22]];
+const day=()=>{const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`};
+const dateText=document.getElementById('today'),status=document.getElementById('status'),info=document.getElementById('reminderInfo'),enable=document.getElementById('enable');
+dateText.textContent=new Date().toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+function load(){try{let s=JSON.parse(localStorage.getItem(key)||'{}');if(s.day!==day()){s={day:day(),taken:[]};localStorage.setItem(key,JSON.stringify(s));}return s.taken||[]}catch{return []}}
+let taken=load();
+function save(){localStorage.setItem(key,JSON.stringify({day:day(),taken}));}
+function paint(){buttons.forEach(b=>{let done=taken.includes(b.dataset.time);b.classList.toggle('taken',done);b.querySelector('small').textContent=done?'✓ Taken':'Not taken';b.setAttribute('aria-pressed',String(done));});}
+paint();
+buttons.forEach(b=>b.addEventListener('click',()=>{if(b.id==='last'){taken=[];save();paint();status.textContent='10 PM completed. All indicators reset.';return;}let t=b.dataset.time;taken=taken.includes(t)?taken.filter(x=>x!==t):[...taken,t];save();paint();status.textContent=t+(taken.includes(t)?' marked as taken.':' marked as pending.');}));
+document.getElementById('reset').addEventListener('click',()=>{taken=[];save();paint();status.textContent='All buttons reset.';});
+function updateButton(){if(!('Notification'in window)){info.textContent='Notifications are not supported by this browser.';enable.disabled=true;return;}
+if(localStorage.getItem(enabledKey)==='yes'&&Notification.permission==='granted'){enable.textContent='Reminders enabled ✓';enable.classList.add('enabled');info.textContent='Notifications are enabled. Keep this page open for reminders.';}
+else{enable.textContent='Enable reminders';enable.classList.remove('enabled');info.textContent=Notification.permission==='denied'?'Notifications are blocked. Allow them in Chrome site settings.':'Tap below and allow notifications when asked.';}}
+function alertSound(){try{let C=window.AudioContext||window.webkitAudioContext;if(C){let c=new C();[0,.25,.5].forEach(delay=>{let o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.setValueAtTime(.001,c.currentTime+delay);g.gain.exponentialRampToValueAtTime(.15,c.currentTime+delay+.02);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+delay+.2);o.start(c.currentTime+delay);o.stop(c.currentTime+delay+.22);});}}catch(e){}if(navigator.vibrate)navigator.vibrate([250,120,250]);}
+function sent(){try{let s=JSON.parse(localStorage.getItem(sentKey)||'{}');return s.day===day()?s.times:[];}catch{return [];}}
+function check(){if(localStorage.getItem(enabledKey)!=='yes'||!('Notification'in window)||Notification.permission!=='granted')return;
+let d=new Date(),mins=d.getHours()*60+d.getMinutes(),done=sent();
+schedule.forEach(([label,h])=>{if(mins===h*60&&!done.includes(label)){done.push(label);localStorage.setItem(sentKey,JSON.stringify({day:day(),times:done}));
+try{let n=new Notification('💊 Medicine reminder',{body:`It is ${label}. Time to take your scheduled medicine.`,tag:`med-${day()}-${label}`,requireInteraction:true});n.onclick=()=>{window.focus();n.close();};}catch(e){}
+alertSound();status.textContent=`Reminder: ${label}. Please check your medicine schedule.`;}});}
+enable.addEventListener('click',async()=>{if(!('Notification'in window))return;try{let p=await Notification.requestPermission();if(p==='granted'){localStorage.setItem(enabledKey,'yes');updateButton();status.textContent='Daily reminders enabled.';new Notification('Medicine reminders enabled',{body:'You will receive reminders at the scheduled times while this page is active.'});}else{localStorage.setItem(enabledKey,'no');updateButton();}}catch(e){info.textContent='Open this page in Chrome and allow notifications.';}});
+updateButton();check();
+setInterval(()=>{let s=JSON.parse(localStorage.getItem(key)||'{}');if(s.day!==day()){taken=[];save();paint();dateText.textContent=new Date().toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'});status.textContent='A new day has started. All times are reset.';}check();},15000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)check();});window.addEventListener('focus',check);
+})();
+</script></body></html>
