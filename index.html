@@ -16,11 +16,8 @@ button:focus-visible{outline:3px solid #477fe8;outline-offset:3px}
 </style></head><body><main>
 <h1>💊 Ganesh Ram Eye Drop Reminder</h1><p class="sub">Tap a time after taking your Eye Drop</p>
 <div class="date" id="today"></div>
-<section class="panel"><strong>🔔 Daily notifications</strong>
-<p id="reminderInfo">Enable notifications to receive reminders at your scheduled times.</p>
-<button class="enable" id="enable">Enable reminders</button></section>
 <section class="grid" aria-label="Medicine time slots">
-<button class="slot" data-time="7 AM Hylosurge">7:00 AM<small>Not taken</small></button>
+<button class="slot" data-time="7 AM">7:00 AM<small>Not taken</small></button>
 <button class="slot" data-time="8 AM">8:00 AM<small>Not taken</small></button>
 <button class="slot" data-time="9 AM">9:00 AM<small>Not taken</small></button>
 <button class="slot" data-time="12 PM">12:00 PM<small>Not taken</small></button>
@@ -48,10 +45,6 @@ function paint(){buttons.forEach(b=>{let done=taken.includes(b.dataset.time);b.c
 paint();
 buttons.forEach(b=>b.addEventListener('click',()=>{if(b.id==='last'){taken=[];save();paint();status.textContent='10 PM completed. All indicators reset.';return;}let t=b.dataset.time;taken=taken.includes(t)?taken.filter(x=>x!==t):[...taken,t];save();paint();status.textContent=t+(taken.includes(t)?' marked as taken.':' marked as pending.');}));
 document.getElementById('reset').addEventListener('click',()=>{taken=[];save();paint();status.textContent='All buttons reset.';});
-function updateButton(){if(!('Notification'in window)){info.textContent='Notifications are not supported by this browser.';enable.disabled=true;return;}
-if(localStorage.getItem(enabledKey)==='yes'&&Notification.permission==='granted'){enable.textContent='Reminders enabled ✓';enable.classList.add('enabled');info.textContent='Notifications are enabled. Keep this page open for reminders.';}
-else{enable.textContent='Enable reminders';enable.classList.remove('enabled');info.textContent=Notification.permission==='denied'?'Notifications are blocked. Allow them in Chrome site settings.':'Tap below and allow notifications when asked.';}}
-function alertSound(){try{let C=window.AudioContext||window.webkitAudioContext;if(C){let c=new C();[0,.25,.5].forEach(delay=>{let o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.setValueAtTime(.001,c.currentTime+delay);g.gain.exponentialRampToValueAtTime(.15,c.currentTime+delay+.02);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+delay+.2);o.start(c.currentTime+delay);o.stop(c.currentTime+delay+.22);});}}catch(e){}if(navigator.vibrate)navigator.vibrate([250,120,250]);}
 function sent(){try{let s=JSON.parse(localStorage.getItem(sentKey)||'{}');return s.day===day()?s.times:[];}catch{return [];}}
 function check(){if(localStorage.getItem(enabledKey)!=='yes'||!('Notification'in window)||Notification.permission!=='granted')return;
 let d=new Date(),mins=d.getHours()*60+d.getMinutes(),done=sent();
